@@ -1,0 +1,75 @@
+[MASTER]
+# Pylint configuration for Language Translation API
+
+# Use multiple processes to speed up Pylint
+jobs=1
+
+# Pickle collected data for later comparisons
+persistent=yes
+
+# List of plugins
+load-plugins=
+
+[MESSAGES CONTROL]
+# Disable specific warnings
+disable=
+    C0111,  # missing-docstring (we have docstrings where needed)
+    R0903,  # too-few-public-methods
+    W0212,  # protected-access (needed for testing)
+
+[REPORTS]
+# Set the output format
+output-format=text
+
+# Tells whether to display a full report or only the messages
+reports=yes
+
+# Activate the evaluation score
+score=yes
+
+[BASIC]
+# Good variable names
+good-names=i,j,k,ex,_,id,db
+
+# Regular expression for constant names
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+
+# Regular expression for variable names
+variable-rgx=[a-z_][a-z0-9_]{2,30}$
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=100
+
+# Maximum number of lines in a module
+max-module-lines=1000
+
+# String used for indentation
+indent-string='    '
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=7
+
+# Maximum number of locals for function / method body
+max-locals=15
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of branch for function / method body
+max-branches=12
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+# Maximum number of attributes for a class
+max-attributes=10
+
+[IMPORTS]
+# Deprecated modules which should not be used
+deprecated-modules=optparse
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when caught
+overgeneral-exceptions=Exception

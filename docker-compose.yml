@@ -1,0 +1,33 @@
+# Docker Compose for Language Translation API
+# For local development and testing
+
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: translation-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - API_KEY=${API_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - LOG_ENCRYPT_KEY=${LOG_ENCRYPT_KEY}
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  default:
+    name: translation-api-network
