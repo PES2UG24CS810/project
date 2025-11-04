@@ -17,6 +17,7 @@ pylint==3.0.2
 
 # Security
 bandit==1.7.5
+pbr>=5.11.1
 
 # Environment Management
 python-dotenv==1.0.0
