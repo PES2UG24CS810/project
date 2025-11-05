@@ -33,7 +33,7 @@ router = APIRouter(prefix="/api/v1", tags=["translation"])
 )
 async def translate_text(
     request: TranslateRequest,
-    api_key: str = Depends(verify_api_key),
+    user_key: str = Depends(verify_api_key),
     _rate_limit: int = Depends(check_rate_limit),
     session: Session = Depends(get_session)
 ):
@@ -44,9 +44,9 @@ async def translate_text(
     
     Args:
         request: Translation request with text and language codes
-        api_key: Validated API key
+        user_key: Validated API key
         _rate_limit: Rate limit check (dependency)
-        session: Database session
+        session: Session Database session
         
     Returns:
         TranslateResponse: Translation results
@@ -91,7 +91,7 @@ async def translate_text(
             translated_text=first_translation,
             source_lang=result["source_lang"],
             target_lang=result["target_lang"],
-            user_key=api_key,
+            user_key=user_key,
             timestamp=datetime.utcnow()
         )
         save_history(session, history_record)
@@ -125,7 +125,7 @@ async def translate_text(
 )
 async def detect_language(
     request: DetectLanguageRequest,
-    api_key: str = Depends(verify_api_key),
+    user_key: str = Depends(verify_api_key),
     _rate_limit: int = Depends(check_rate_limit)
 ):
     """
@@ -135,7 +135,7 @@ async def detect_language(
     
     Args:
         request: Detection request with text
-        api_key: Validated API key
+        user_key: Validated API key
         _rate_limit: Rate limit check (dependency)
         
     Returns:
@@ -176,7 +176,7 @@ async def detect_language(
 )
 async def get_translation_history(
     limit: int = 100,
-    api_key: str = Depends(verify_api_key),
+    user_key: str = Depends(verify_api_key),
     _rate_limit: int = Depends(check_rate_limit),
     session: Session = Depends(get_session)
 ):
@@ -187,7 +187,7 @@ async def get_translation_history(
     
     Args:
         limit: Maximum number of records to return (default: 100)
-        api_key: Validated API key
+        user_key: Validated API key
         _rate_limit: Rate limit check (dependency)
         session: Database session
         
@@ -203,7 +203,7 @@ async def get_translation_history(
             )
         
         # Retrieve history
-        history_records = get_history_by_key(session, api_key, limit)
+        history_records = get_history_by_key(session, user_key, limit)
         
         return {
             "records": [HistoryResponse.from_orm(record).dict() for record in history_records],

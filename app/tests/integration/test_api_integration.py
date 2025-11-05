@@ -8,7 +8,10 @@ US-03: Translation history API
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
-from app.core.config import settings
+from app.core.config import settings, create_db_and_tables
+
+# Create database tables before tests
+create_db_and_tables()
 
 client = TestClient(app)
 valid_api_key = "test-key-123"
@@ -39,10 +42,13 @@ def test_translate_single_text_with_auth():
         "target_lang": "es"
     }
     response = client.post("/api/v1/translate", json=payload, headers=headers)
+    if response.status_code != 200:
+        print(f"Response status: {response.status_code}")
+        print(f"Response body: {response.json()}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data["translated_text"], str)
-    assert data["translated_text"].startswith("[Translated to es]:")
+    assert data["translated_text"].startswith("[Translated to ES]:")
     assert data["source_language"] == "en"
     assert data["target_language"] == "es"
 

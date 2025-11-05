@@ -8,6 +8,10 @@ import pytest
 import time
 from fastapi.testclient import TestClient
 from app.main import app
+from app.core.config import create_db_and_tables
+
+# Create database tables before tests
+create_db_and_tables()
 
 client = TestClient(app)
 valid_api_key = "test-key-123"

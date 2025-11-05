@@ -77,19 +77,19 @@ rate_limiter = RateLimiter(
 )
 
 
-async def check_rate_limit(request: Request, api_key: str):
+async def check_rate_limit(request: Request, x_api_key: str = None):
     """
     Dependency to check rate limit for a request.
     
     Args:
         request: FastAPI request object
-        api_key: Validated API key
+        x_api_key: Optional API key from header
         
     Raises:
         HTTPException: If rate limit is exceeded
     """
     # Use API key as identifier, fallback to IP
-    identifier = api_key if api_key else request.client.host
+    identifier = x_api_key if x_api_key else (request.client.host if request.client else "unknown")
     
     is_allowed, remaining = rate_limiter.check_rate_limit(identifier)
     
