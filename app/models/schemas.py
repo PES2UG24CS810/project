@@ -44,15 +44,15 @@ class TranslateResponse(BaseModel):
     Attributes:
         original_text: Original input text
         translated_text: Translated text
-        source_lang: Detected or provided source language
-        target_lang: Target language
+        source_language: Detected or provided source language
+        target_language: Target language
         timestamp: When translation was performed
     """
     
     original_text: str | List[str]
     translated_text: str | List[str]
-    source_lang: str
-    target_lang: str
+    source_language: str
+    target_language: str
     timestamp: datetime
 
 
@@ -73,12 +73,12 @@ class DetectLanguageResponse(BaseModel):
     
     Attributes:
         text: Input text
-        detected_lang: Detected language code
+        language: Detected language code
         confidence: Confidence score (0-1)
     """
     
     text: str
-    detected_lang: str
+    language: str
     confidence: float
 
 

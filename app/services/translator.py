@@ -102,6 +102,15 @@ class TranslatorService:
         is_list = isinstance(text, list)
         texts = text if is_list else [text]
         
+        # Handle empty text
+        if not texts or (len(texts) == 1 and not texts[0]):
+            return {
+                "original_text": text,
+                "translated_text": "" if not is_list else [],
+                "source_lang": source_lang or "en",
+                "target_lang": target_lang
+            }
+        
         # Auto-detect source language if not provided
         if not source_lang:
             try:
@@ -114,8 +123,11 @@ class TranslatorService:
         # Translate each text
         translations = []
         for txt in texts:
-            translated = await self.translate_text(txt, source_lang, target_lang)
-            translations.append(translated)
+            if txt:
+                translated = await self.translate_text(txt, source_lang, target_lang)
+                translations.append(translated)
+            else:
+                translations.append("")
         
         # Return in the same format as input (single or list)
         result = {

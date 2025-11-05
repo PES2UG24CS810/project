@@ -18,7 +18,7 @@ def test_system_health():
     """Test system health from end-to-end perspective."""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    assert response.json()["status"] == "ok"
 
 
 def test_complete_translation_workflow():

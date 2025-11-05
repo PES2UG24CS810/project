@@ -100,8 +100,8 @@ async def translate_text(
         return TranslateResponse(
             original_text=request.text,
             translated_text=result["translated_text"],
-            source_lang=result["source_lang"],
-            target_lang=result["target_lang"],
+            source_language=result["source_lang"],
+            target_language=result["target_lang"],
             timestamp=datetime.utcnow()
         )
         
@@ -149,11 +149,11 @@ async def detect_language(
         sanitized_text = sanitize_text(request.text)
         
         # Detect language
-        detected_lang, confidence = await translator_service.detect_language(sanitized_text)
+        language, confidence = await translator_service.detect_language(sanitized_text)
         
         return DetectLanguageResponse(
             text=request.text,
-            detected_lang=detected_lang,
+            language=language,
             confidence=round(confidence, 4)
         )
         
@@ -171,7 +171,6 @@ async def detect_language(
 
 @router.get(
     "/history",
-    response_model=List[HistoryResponse],
     summary="Get translation history",
     description="Retrieve translation history for the authenticated user."
 )
@@ -193,7 +192,7 @@ async def get_translation_history(
         session: Database session
         
     Returns:
-        List[HistoryResponse]: List of translation history records
+        dict: Dictionary with records list and total count
     """
     try:
         # Validate limit
@@ -206,7 +205,10 @@ async def get_translation_history(
         # Retrieve history
         history_records = get_history_by_key(session, api_key, limit)
         
-        return [HistoryResponse.from_orm(record) for record in history_records]
+        return {
+            "records": [HistoryResponse.from_orm(record).dict() for record in history_records],
+            "total": len(history_records)
+        }
         
     except Exception as exc:
         raise HTTPException(

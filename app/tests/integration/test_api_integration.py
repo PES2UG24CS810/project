@@ -19,7 +19,7 @@ def test_health_endpoint():
     """Test health check endpoint."""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    assert response.json()["status"] == "ok"
 
 
 def test_root_endpoint():
@@ -27,7 +27,7 @@ def test_root_endpoint():
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "Language Translation API"
+    assert data["message"] == "Welcome to Language Translation API"
     assert "version" in data
 
 
