@@ -1,35 +1,64 @@
 """
-Translation Service - Placeholder
+Translation Service for Language Translation API.
 
-This module will contain the translation logic.
+Provides language detection and mock translation functionality.
 """
-from typing import Dict, Optional
+from typing import Dict, List, Tuple
+import langdetect
+from langdetect import detect_langs, LangDetectException
+from app.core.config import settings
 
 
 class TranslatorService:
     """
-    Translation service for handling text translation.
+    Translation service for handling text translation and language detection.
     
-    This is a placeholder class for future translation implementation.
+    Uses langdetect for language detection and provides deterministic
+    mock translation for testing purposes.
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self):
+        """Initialize the translator service."""
+        # Set seed for deterministic language detection in tests
+        langdetect.DetectorFactory.seed = 0
+    
+    async def detect_language(self, text: str) -> Tuple[str, float]:
         """
-        Initialize the translator service.
+        Detect the language of the given text.
         
         Args:
-            api_key: API key for translation service
+            text: Text to detect language from
+            
+        Returns:
+            Tuple[str, float]: (language_code, confidence_score)
+            
+        Raises:
+            ValueError: If language cannot be detected
         """
-        self.api_key = api_key
+        if not text or len(text.strip()) < 3:
+            raise ValueError("Text too short for language detection")
+        
+        try:
+            langs = detect_langs(text)
+            if langs:
+                # Return the most probable language
+                best = langs[0]
+                return best.lang, best.prob
+            raise ValueError("Could not detect language")
+        except LangDetectException as exc:
+            raise ValueError(f"Language detection failed: {str(exc)}") from exc
     
-    async def translate(
+    async def translate_text(
         self,
         text: str,
         source_lang: str,
         target_lang: str
-    ) -> Dict[str, str]:
+    ) -> str:
         """
-        Translate text from source to target language.
+        Translate single text from source to target language.
+        
+        This is a deterministic mock translation that adds a prefix.
+        In production, this would call an actual translation API.
         
         Args:
             text: Text to translate
@@ -37,11 +66,67 @@ class TranslatorService:
             target_lang: Target language code
             
         Returns:
-            dict: Translation result
+            str: Translated text
         """
-        # Placeholder - to be implemented
-        return {
-            "translated_text": text,
-            "source_language": source_lang,
-            "target_language": target_lang
+        # Validate languages are supported
+        supported = settings.get_supported_languages()
+        if target_lang not in supported:
+            raise ValueError(f"Unsupported target language: {target_lang}")
+        
+        # Mock translation: add prefix with target language
+        if source_lang == target_lang:
+            return text
+        
+        # Deterministic mock translation
+        translated = f"[Translated to {target_lang.upper()}]: {text}"
+        return translated
+    
+    async def translate(
+        self,
+        text: str | List[str],
+        source_lang: str | None,
+        target_lang: str
+    ) -> Dict:
+        """
+        Translate text or list of texts.
+        
+        Args:
+            text: Single text or list of texts to translate
+            source_lang: Source language (None for auto-detect)
+            target_lang: Target language code
+            
+        Returns:
+            dict: Translation results with original, translated, source/target langs
+        """
+        # Handle single text vs list
+        is_list = isinstance(text, list)
+        texts = text if is_list else [text]
+        
+        # Auto-detect source language if not provided
+        if not source_lang:
+            try:
+                detected_lang, _ = await self.detect_language(texts[0])
+                source_lang = detected_lang
+            except ValueError:
+                # Default to English if detection fails
+                source_lang = "en"
+        
+        # Translate each text
+        translations = []
+        for txt in texts:
+            translated = await self.translate_text(txt, source_lang, target_lang)
+            translations.append(translated)
+        
+        # Return in the same format as input (single or list)
+        result = {
+            "original_text": text,
+            "translated_text": translations if is_list else translations[0],
+            "source_lang": source_lang,
+            "target_lang": target_lang
         }
+        
+        return result
+
+
+# Global translator instance
+translator_service = TranslatorService()

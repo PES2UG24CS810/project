@@ -1,52 +1,47 @@
 """
-Database Models - Placeholder
+Database operations for Language Translation API.
 
-This module will contain database models and ORM configurations.
+Functions for saving and retrieving translation history.
 """
-from typing import Optional
-from datetime import datetime
+from typing import List
+from sqlmodel import Session, select
+from app.models.history import TranslationHistory
 
 
-class TranslationLog:
+def save_history(session: Session, record: TranslationHistory) -> TranslationHistory:
     """
-    Placeholder model for translation log entries.
+    Save translation history record to database.
     
-    This will be implemented with proper ORM (SQLAlchemy) in future sprints.
+    Args:
+        session: Database session
+        record: TranslationHistory record to save
+        
+    Returns:
+        TranslationHistory: Saved record with ID
     """
+    session.add(record)
+    session.commit()
+    session.refresh(record)
+    return record
+
+
+def get_history_by_key(session: Session, user_key: str, limit: int = 100) -> List[TranslationHistory]:
+    """
+    Retrieve translation history for a specific API key.
     
-    def __init__(
-        self,
-        text: str,
-        source_lang: str,
-        target_lang: str,
-        translated_text: Optional[str] = None
-    ):
-        """
-        Initialize translation log entry.
+    Args:
+        session: Database session
+        user_key: API key to filter by
+        limit: Maximum number of records to return
         
-        Args:
-            text: Original text
-            source_lang: Source language
-            target_lang: Target language
-            translated_text: Translated text
-        """
-        self.text = text
-        self.source_lang = source_lang
-        self.target_lang = target_lang
-        self.translated_text = translated_text
-        self.timestamp = datetime.utcnow()
-    
-    def to_dict(self) -> dict:
-        """
-        Convert to dictionary representation.
-        
-        Returns:
-            dict: Log entry as dictionary
-        """
-        return {
-            "text": self.text,
-            "source_lang": self.source_lang,
-            "target_lang": self.target_lang,
-            "translated_text": self.translated_text,
-            "timestamp": self.timestamp.isoformat()
-        }
+    Returns:
+        List[TranslationHistory]: List of history records
+    """
+    statement = (
+        select(TranslationHistory)
+        .where(TranslationHistory.user_key == user_key)
+        .order_by(TranslationHistory.timestamp.desc())
+        .limit(limit)
+    )
+    results = session.exec(statement)
+    return list(results)
