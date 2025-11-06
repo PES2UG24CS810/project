@@ -56,7 +56,7 @@ async def test_translate_text_single():
     """Test translation of single text."""
     translator = TranslatorService()
     result = await translator.translate_text("Hello", "en", "es")
-    assert result.startswith("[Translated to ES]:")
+    assert result.startswith("[Translated to es]:")
     assert "Hello" in result
 
 
@@ -69,8 +69,8 @@ async def test_translate_text_different_languages():
     result_es = await translator.translate_text(text, "en", "es")
     result_fr = await translator.translate_text(text, "en", "fr")
     
-    assert "[Translated to ES]:" in result_es
-    assert "[Translated to FR]:" in result_fr
+    assert "[Translated to es]:" in result_es
+    assert "[Translated to fr]:" in result_fr
     assert result_es != result_fr
 
 
@@ -82,7 +82,7 @@ async def test_translate_single_text_with_source():
     
     assert isinstance(result, dict)
     assert "translated_text" in result
-    assert result["translated_text"].startswith("[Translated to ES]:")
+    assert result["translated_text"].startswith("[Translated to es]:")
 
 
 @pytest.mark.asyncio
@@ -93,7 +93,7 @@ async def test_translate_single_text_without_source():
     
     assert isinstance(result, dict)
     assert "translated_text" in result
-    assert result["translated_text"].startswith("[Translated to ES]:")
+    assert result["translated_text"].startswith("[Translated to es]:")
 
 
 @pytest.mark.asyncio
@@ -107,7 +107,7 @@ async def test_translate_list_with_source():
     assert isinstance(result["translated_text"], list)
     assert len(result["translated_text"]) == 3
     for trans in result["translated_text"]:
-        assert trans.startswith("[Translated to ES]:")
+        assert trans.startswith("[Translated to es]:")
 
 
 @pytest.mark.asyncio
@@ -138,4 +138,4 @@ async def test_translate_special_characters():
     result = await translator.translate(text, "en", "es")
     
     assert text in result["translated_text"]
-    assert result["translated_text"].startswith("[Translated to ES]:")
+    assert result["translated_text"].startswith("[Translated to es]:")

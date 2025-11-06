@@ -54,7 +54,7 @@ def test_translate_single_text_with_auth():
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data["translated_text"], str)
-    assert data["translated_text"].startswith("[Translated to ES]:")
+    assert data["translated_text"].startswith("[Translated to es]:")
     assert data["source_language"] == "en"
     assert data["target_language"] == "es"
 
