@@ -70,7 +70,7 @@ class TranslatorService:
         """
         # Validate languages are supported
         supported = settings.get_supported_languages()
-        if target_lang not in supported:
+        if target_lang.lower() not in supported:
             raise ValueError(f"Unsupported target language: {target_lang}")
         
         # Mock translation: add prefix with target language
@@ -78,7 +78,7 @@ class TranslatorService:
             return text
         
         # Deterministic mock translation
-        translated = f"[Translated to {target_lang.upper()}]: {text}"
+        translated = f"[Translated to {target_lang}]: {text}"
         return translated
     
     async def translate(
