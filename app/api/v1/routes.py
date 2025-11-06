@@ -105,6 +105,9 @@ async def translate_text(
             timestamp=datetime.utcnow()
         )
         
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is (don't wrap them)
+        raise
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
