@@ -9,6 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.core.config import settings, create_db_and_tables
+from app.core.rate_limiter import rate_limiter
 
 # Create database tables before tests
 create_db_and_tables()
@@ -16,6 +17,14 @@ create_db_and_tables()
 client = TestClient(app)
 valid_api_key = "test-key-123"
 headers = {"X-API-Key": valid_api_key}
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset rate limiter before each test."""
+    rate_limiter.requests.clear()
+    yield
+    rate_limiter.requests.clear()
 
 
 def test_health_endpoint():
@@ -42,9 +51,6 @@ def test_translate_single_text_with_auth():
         "target_lang": "es"
     }
     response = client.post("/api/v1/translate", json=payload, headers=headers)
-    if response.status_code != 200:
-        print(f"Response status: {response.status_code}")
-        print(f"Response body: {response.json()}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data["translated_text"], str)

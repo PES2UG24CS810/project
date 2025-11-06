@@ -9,6 +9,7 @@ import time
 from fastapi.testclient import TestClient
 from app.main import app
 from app.core.config import create_db_and_tables
+from app.core.rate_limiter import rate_limiter
 
 # Create database tables before tests
 create_db_and_tables()
@@ -16,6 +17,14 @@ create_db_and_tables()
 client = TestClient(app)
 valid_api_key = "test-key-123"
 headers = {"X-API-Key": valid_api_key}
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset rate limiter before each test."""
+    rate_limiter.requests.clear()
+    yield
+    rate_limiter.requests.clear()
 
 
 def test_system_health():
