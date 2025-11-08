@@ -1,11 +1,14 @@
 """
 Translation Service for Language Translation API.
 
-Provides language detection and mock translation functionality.
+Provides language detection and real translation functionality using Google Translate.
 """
 from typing import Dict, List, Tuple
+import asyncio
+from functools import partial
 import langdetect
 from langdetect import detect_langs, LangDetectException
+from googletrans import Translator
 from app.core.config import settings
 
 
@@ -13,14 +16,15 @@ class TranslatorService:
     """
     Translation service for handling text translation and language detection.
     
-    Uses langdetect for language detection and provides deterministic
-    mock translation for testing purposes.
+    Uses langdetect for language detection and Google Translate for real translations.
     """
     
     def __init__(self):
         """Initialize the translator service."""
         # Set seed for deterministic language detection in tests
         langdetect.DetectorFactory.seed = 0
+        # Initialize Google Translator
+        self.translator = Translator()
     
     async def detect_language(self, text: str) -> Tuple[str, float]:
         """
@@ -55,10 +59,7 @@ class TranslatorService:
         target_lang: str
     ) -> str:
         """
-        Translate single text from source to target language.
-        
-        This is a deterministic mock translation that adds a prefix.
-        In production, this would call an actual translation API.
+        Translate single text from source to target language using Google Translate.
         
         Args:
             text: Text to translate
@@ -67,19 +68,39 @@ class TranslatorService:
             
         Returns:
             str: Translated text
+            
+        Raises:
+            ValueError: If translation fails or language is unsupported
         """
         # Validate languages are supported
         supported = settings.get_supported_languages()
         if target_lang.lower() not in supported:
             raise ValueError(f"Unsupported target language: {target_lang}")
         
-        # Mock translation: add prefix with target language
+        # If source and target are the same, return original text
         if source_lang == target_lang:
             return text
         
-        # Deterministic mock translation
-        translated = f"[Translated to {target_lang}]: {text}"
-        return translated
+        try:
+            # Run translation in thread pool to avoid blocking
+            loop = asyncio.get_event_loop()
+            translate_func = partial(
+                self.translator.translate,
+                text,
+                src=source_lang,
+                dest=target_lang
+            )
+            # Add timeout to prevent hanging
+            result = await asyncio.wait_for(
+                loop.run_in_executor(None, translate_func),
+                timeout=10.0  # 10 second timeout
+            )
+            return result.text
+        except asyncio.TimeoutError as exc:
+            raise ValueError("Translation request timed out") from exc
+        except Exception as exc:
+            # If Google Translate fails, provide helpful error
+            raise ValueError(f"Translation failed: {str(exc)}") from exc
     
     async def translate(
         self,
